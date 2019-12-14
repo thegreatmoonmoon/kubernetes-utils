@@ -1,0 +1,36 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  generateName: {{cronjob_name}}-
+spec:
+  schedule: "*/15 * * * *"
+  successfulJobsHistoryLimit: 7
+  failedJobsHistoryLimit: 7
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 2000
+          containers:
+          - image: {{container_image_name}}
+            name: {{container_name}}
+            env:
+            - name: {{container_envvar_name1}}
+              valueFrom:
+                secretKeyRef:
+                  name: {{secret_name1}}
+                  key: {{secret_key1}}
+            - name: {{container_envvar_name2}}
+              valueFrom:
+                secretKeyRef:
+                  name: {{secret_name2}}
+                  key: {{secret_key2}}
+            securityContext:
+              allowPrivilegeEscalation: false
+          imagePullSecrets:
+          - name: {{secret_to_image_repo}} 
+          restartPolicy: OnFailure
+  suspend: False
+  concurrencyPolicy: Forbid
